@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { CameraRig } from './CameraRig.js';
 import { GeyserBasin } from '../realms/GeyserBasin.js';
 
+const BACKGROUND_COLOR = new THREE.Color('#dcdcdc');
+
 export class Experience {
     constructor(canvas) {
         this.canvas = canvas;
@@ -10,11 +12,13 @@ export class Experience {
             height: window.innerHeight
         };
 
+        this.clock = new THREE.Clock();
+
         // Scene setup
         this.scene = new THREE.Scene();
         // Atmospheric background color (matches Geyser Basin vibe: warm white/grey)
-        this.scene.background = new THREE.Color('#dcdcdc');
-        this.scene.fog = new THREE.FogExp2('#dcdcdc', 0.05);
+        this.scene.background = BACKGROUND_COLOR;
+        this.scene.fog = new THREE.FogExp2(BACKGROUND_COLOR, 0.05);
 
         // Camera setup
         this.camera = new THREE.PerspectiveCamera(35, this.sizes.width / this.sizes.height, 0.1, 100);
@@ -40,9 +44,8 @@ export class Experience {
         this.scene.add(this.geyserBasin.group);
 
         // Resize handling
-        window.addEventListener('resize', () => {
-            this.resize();
-        });
+        this.boundResize = this.resize.bind(this);
+        window.addEventListener('resize', this.boundResize);
 
         // Start loop
         this.tick();
@@ -60,8 +63,9 @@ export class Experience {
     }
 
     tick() {
-        this.cameraRig.update();
-        if (this.geyserBasin) this.geyserBasin.update();
+        const elapsedTime = this.clock.getElapsedTime();
+        this.cameraRig.update(elapsedTime);
+        if (this.geyserBasin) this.geyserBasin.update(elapsedTime);
         this.renderer.render(this.scene, this.camera);
         window.requestAnimationFrame(() => this.tick());
     }

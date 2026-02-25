@@ -1,5 +1,14 @@
 import * as THREE from 'three';
 
+const GEYSER_COUNT = 8;
+const GEYSER_MIN_HEIGHT = 0.5;
+const GEYSER_HEIGHT_RANGE = 1.5;
+const GEYSER_MIN_RADIUS = 0.3;
+const GEYSER_RADIUS_RANGE = 0.7;
+const GEYSER_MIN_DIST = 2;
+const GEYSER_DIST_RANGE = 8;
+const GEYSER_TOP_RADIUS_RATIO = 0.6;
+
 export class GeyserBasin {
     constructor() {
         this.group = new THREE.Group();
@@ -23,24 +32,26 @@ export class GeyserBasin {
             groundMaterial
         );
         ground.rotation.x = -Math.PI * 0.5;
+        ground.receiveShadow = true;
         this.group.add(ground);
 
         // Geysers (simple cylinders/cones)
-        for(let i = 0; i < 8; i++) {
-            const height = 0.5 + Math.random() * 1.5;
-            const radius = 0.3 + Math.random() * 0.7;
+        for(let i = 0; i < GEYSER_COUNT; i++) {
+            const height = GEYSER_MIN_HEIGHT + Math.random() * GEYSER_HEIGHT_RANGE;
+            const radius = GEYSER_MIN_RADIUS + Math.random() * GEYSER_RADIUS_RANGE;
             const geyser = new THREE.Mesh(
-                new THREE.CylinderGeometry(radius * 0.6, radius, height, 16, 1, true),
+                new THREE.CylinderGeometry(radius * GEYSER_TOP_RADIUS_RATIO, radius, height, 16, 1, true),
                 geyserMaterial
             );
 
             // Random position but avoid center too much
             const angle = Math.random() * Math.PI * 2;
-            const dist = 2 + Math.random() * 8;
+            const dist = GEYSER_MIN_DIST + Math.random() * GEYSER_DIST_RANGE;
 
             geyser.position.x = Math.sin(angle) * dist;
             geyser.position.z = Math.cos(angle) * dist;
             geyser.position.y = height * 0.5; // Sit on ground
+            geyser.castShadow = true;
 
             this.group.add(geyser);
         }
