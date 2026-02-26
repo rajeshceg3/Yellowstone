@@ -1,17 +1,19 @@
 # Project Progress
 
 ## Current Status
-- **Completion**: 10%
-- **Current Focus**: Foundation and Geyser Basin Prototype
+- **Completion**: 25%
+- **Current Focus**: Geyser Basin Visual Polish and Effects
 
 ## Accomplished
 - [x] Project initialization (Vite, Three.js, GSAP, Tailwind).
 - [x] Core architecture implementation (`Experience`, `CameraRig`).
 - [x] First realm placeholder (`GeyserBasin`) with basic geometry and lighting.
 - [x] Basic UI overlay setup.
+- [x] Enhanced Geyser Basin terrain with shader-based displacement and coloring.
+- [x] Implemented procedural shader-based steam columns (`SteamColumn`).
 
 ## Next Steps
-- Implement advanced shader-based steam/fog.
-- Enhance Geyser Basin visuals (terrain, textures).
-- Implement transition system.
-- Add remaining realms.
+- Implement transition system (Geyser -> Prismatic).
+- Add Prismatic Spring Field Realm.
+- Refine overall atmospheric fog and lighting.
+- Add wildlife placeholders.
