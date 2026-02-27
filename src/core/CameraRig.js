@@ -12,9 +12,39 @@ export class CameraRig {
     constructor(camera) {
         this.camera = camera;
         this.basePosition = this.camera.position.clone();
+
+        // Transition variables
+        this.isTransitioning = false;
+        this.transitionStartTime = 0;
+        this.transitionDuration = 0;
+        this.startPosition = new THREE.Vector3();
+        this.targetPosition = new THREE.Vector3();
+    }
+
+    transitionTo(targetPosition, duration, time) {
+        this.isTransitioning = true;
+        this.transitionStartTime = time;
+        this.transitionDuration = duration;
+        this.startPosition.copy(this.basePosition);
+        this.targetPosition.copy(targetPosition);
     }
 
     update(time) {
+        // Handle Transition
+        if (this.isTransitioning) {
+            const elapsed = time - this.transitionStartTime;
+            const progress = Math.min(elapsed / this.transitionDuration, 1.0);
+
+            // Smoothstep for ease-in-out feel
+            const smoothProgress = progress * progress * (3 - 2 * progress);
+
+            this.basePosition.lerpVectors(this.startPosition, this.targetPosition, smoothProgress);
+
+            if (progress >= 1.0) {
+                this.isTransitioning = false;
+            }
+        }
+
         const t = time * DRIFT_SPEED;
 
         // Gentle floating movement
