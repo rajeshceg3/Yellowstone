@@ -2,9 +2,15 @@ import * as THREE from 'three';
 import { CameraRig } from './CameraRig.js';
 import { GeyserBasin } from '../realms/GeyserBasin.js';
 import { PrismaticSprings } from '../realms/PrismaticSprings.js';
+import { GrandCanyon } from '../realms/GrandCanyon.js';
+import { LamarValley } from '../realms/LamarValley.js';
+import { CalderaDepth } from '../realms/CalderaDepth.js';
 
 const GEYSER_COLOR = new THREE.Color('#dcdcdc');
 const PRISMATIC_COLOR = new THREE.Color('#e0f0ff'); // Cool mist blue
+const CANYON_COLOR = new THREE.Color('#8ca6b5'); // Cool mist blues / golden ochres
+const VALLEY_COLOR = new THREE.Color('#c2d1c7'); // Muted sage / early morning haze
+const CALDERA_COLOR = new THREE.Color('#3d2817'); // Dim ambers / volcanic glow through fog
 
 export class Experience {
     constructor(canvas) {
@@ -46,11 +52,23 @@ export class Experience {
         this.scene.add(this.geyserBasin.group);
 
         this.prismaticSprings = new PrismaticSprings();
-        this.prismaticSprings.group.position.z = -50; // Position it further out
+        this.prismaticSprings.group.position.z = -50;
         this.scene.add(this.prismaticSprings.group);
 
+        this.grandCanyon = new GrandCanyon();
+        this.grandCanyon.group.position.z = -100;
+        this.scene.add(this.grandCanyon.group);
+
+        this.lamarValley = new LamarValley();
+        this.lamarValley.group.position.z = -150;
+        this.scene.add(this.lamarValley.group);
+
+        this.calderaDepth = new CalderaDepth();
+        this.calderaDepth.group.position.z = -200;
+        this.scene.add(this.calderaDepth.group);
+
         // Transition State
-        this.transitionTriggered = false;
+        this.currentRealmIndex = 0;
 
         // Resize handling
         this.boundResize = this.resize.bind(this);
@@ -74,54 +92,96 @@ export class Experience {
     tick() {
         const elapsedTime = this.clock.getElapsedTime();
 
-        // Auto-transition logic (Demo)
-        if (!this.transitionTriggered && elapsedTime > 10) {
-            this.transitionTriggered = true;
-            console.log("Drifting to Prismatic Springs...");
-            // Move to near Prismatic Springs
-            this.cameraRig.transitionTo(
-                new THREE.Vector3(0, 2, -45),
-                20, // Duration in seconds (slow drift)
-                elapsedTime
-            );
+        // Auto-transition logic sequentially through the 5 realms
+        // Dwell for 15s in each realm, transition takes 20s. Total = 35s per realm.
+        const DWELL_TIME = 15;
+        const TRANSITION_DURATION = 20;
+        const CYCLE_TIME = DWELL_TIME + TRANSITION_DURATION;
+
+        if (this.currentRealmIndex < 4) {
+            // Target Z for each realm: -45, -95, -145, -195
+            const nextTransitionTime = (this.currentRealmIndex * CYCLE_TIME) + DWELL_TIME;
+
+            if (elapsedTime > nextTransitionTime && !this.cameraRig.isTransitioning) {
+                this.currentRealmIndex++;
+                const targetZ = -(this.currentRealmIndex * 50) + 5;
+
+                this.cameraRig.transitionTo(
+                    new THREE.Vector3(0, 2, targetZ),
+                    TRANSITION_DURATION,
+                    elapsedTime
+                );
+            }
         }
 
         this.cameraRig.update(elapsedTime);
         if (this.geyserBasin) this.geyserBasin.update(elapsedTime);
         if (this.prismaticSprings) this.prismaticSprings.update(elapsedTime);
+        if (this.grandCanyon) this.grandCanyon.update(elapsedTime);
+        if (this.lamarValley) this.lamarValley.update(elapsedTime);
+        if (this.calderaDepth) this.calderaDepth.update(elapsedTime);
 
         // Environmental Transition based on camera Z
-        // Geyser is around 0, Prismatic is around -50.
-        // Transition zone: -10 to -40
         const camZ = this.camera.position.z;
 
-        // Normalize progress based on Z position: 0 at start (-10), 1 at end (-40)
+        // Determine which two realms we are between based on camZ
+        // Each realm is 50 units apart: 0, -50, -100, -150, -200
+        const realmColors = [GEYSER_COLOR, PRISMATIC_COLOR, CANYON_COLOR, VALLEY_COLOR, CALDERA_COLOR];
+        const realmNames = ["Geyser Basin", "Prismatic Spring", "Grand Canyon", "Lamar Valley", "Caldera Depth"];
+
+        // Find which interval we are in
+        let intervalIndex = Math.max(0, Math.min(3, Math.floor(-camZ / 50)));
+        let startZ = -(intervalIndex * 50) - 10; // Start transition a bit early
+        let endZ = -(intervalIndex * 50) - 40;   // End before reaching next realm center
+
         let progress = 0;
-        if (camZ < -10) {
-             progress = (camZ - (-10)) / (-40 - (-10));
-             progress = Math.max(0, Math.min(1, progress));
+        if (camZ < startZ && camZ > endZ) {
+             progress = (camZ - startZ) / (endZ - startZ);
+        } else if (camZ <= endZ) {
+            progress = 1.0;
         }
 
-        // Interpolate Fog
-        // Geyser Color -> Prismatic Color
-        this.scene.background.lerpColors(GEYSER_COLOR, PRISMATIC_COLOR, progress);
+        // Color interpolation
+        const startColor = realmColors[intervalIndex];
+        const endColor = realmColors[intervalIndex + 1];
+
+        this.scene.background.lerpColors(startColor, endColor, progress);
         this.scene.fog.color.copy(this.scene.background);
 
-        // Fog Density: 0.05 -> 0.04 (slightly clearer or different?)
-        // Let's make it denser in the middle?
-        // Mid-transition (progress 0.5) -> Density 0.08 (thick steam wall)
-        // End -> 0.04
-
+        // Fog Density: Thick steam wall in the middle of transition
         let targetDensity = 0.05;
-        if (progress < 0.5) {
-            // 0 -> 0.5: 0.05 -> 0.08
-            targetDensity = THREE.MathUtils.lerp(0.05, 0.08, progress * 2);
-        } else {
-            // 0.5 -> 1.0: 0.08 -> 0.04
-            targetDensity = THREE.MathUtils.lerp(0.08, 0.04, (progress - 0.5) * 2);
+        if (progress > 0 && progress < 1) {
+            if (progress < 0.5) {
+                targetDensity = THREE.MathUtils.lerp(0.05, 0.08, progress * 2);
+            } else {
+                targetDensity = THREE.MathUtils.lerp(0.08, 0.04, (progress - 0.5) * 2);
+            }
+        } else if (progress === 1) {
+            targetDensity = 0.04; // Baseline for next realm
         }
+
+        // In deep caldera we want thicker baseline fog
+        if (camZ < -190) {
+            targetDensity = THREE.MathUtils.lerp(0.04, 0.06, (-camZ - 190) / 10);
+        }
+
         this.scene.fog.density = targetDensity;
 
+        // Update UI Text
+        let activeNameIndex = intervalIndex;
+        if (progress > 0.5) activeNameIndex++;
+
+        const regionNameEl = document.getElementById('region-name');
+        if (regionNameEl && regionNameEl.innerText.toUpperCase() !== realmNames[activeNameIndex].toUpperCase() && !this.isFadingText) {
+            // Simple fade out/in effect
+            this.isFadingText = true;
+            regionNameEl.style.opacity = 0;
+            setTimeout(() => {
+                regionNameEl.innerText = realmNames[activeNameIndex];
+                regionNameEl.style.opacity = 1;
+                this.isFadingText = false;
+            }, 1000);
+        }
 
         this.renderer.render(this.scene, this.camera);
         window.requestAnimationFrame(() => this.tick());
