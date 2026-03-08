@@ -32,6 +32,9 @@ float snoise(vec2 v){
 }
 `;
 
+const STEAM_VENT_COUNT = 5;
+const GROUND_COLOR = '#b0a090';
+
 export class PrismaticSprings {
     constructor() {
         this.group = new THREE.Group();
@@ -39,7 +42,7 @@ export class PrismaticSprings {
 
         // Materials
         const groundMaterial = new THREE.MeshStandardMaterial({
-            color: '#b0a090', // Mineral ground color
+            color: GROUND_COLOR, // Mineral ground color
             roughness: 0.8,
             metalness: 0.2,
             flatShading: false
@@ -107,8 +110,17 @@ export class PrismaticSprings {
                 // Pools are low elevation
                 float poolFactor = smoothstep(-0.8, 0.0, vElevation);
 
+                // Add microbial noise details
+                float detailNoise = snoise(vUv * 50.0) * 0.5 + snoise(vUv * 100.0) * 0.25;
+                float perturbedElevation = vElevation + detailNoise * 0.2;
+
                 // Gradient: Deep pool (low) -> Edge (mid) -> Ground (high)
-                vec3 poolColor = mix(poolCenterColor, poolEdgeColor, smoothstep(-1.5, -0.5, vElevation));
+                vec3 poolColor = mix(poolCenterColor, poolEdgeColor, smoothstep(-1.5, -0.5, perturbedElevation));
+
+                // Add microbial edge ring
+                vec3 microbialColor = vec3(0.8, 0.9, 0.2);
+                float ringFactor = smoothstep(-0.6, -0.3, perturbedElevation) * smoothstep(-0.1, -0.3, perturbedElevation);
+                poolColor = mix(poolColor, microbialColor, ringFactor * 0.8);
 
                 diffuseColor.rgb = mix(poolColor, mineralColor, poolFactor);
                 `
@@ -125,7 +137,7 @@ export class PrismaticSprings {
         this.group.add(ground);
 
         // Add some steam vents (lower, wider)
-        for(let i = 0; i < 5; i++) {
+        for(let i = 0; i < STEAM_VENT_COUNT; i++) {
             const height = 2 + Math.random() * 2;
             const radius = 1.5 + Math.random() * 1.0;
             const steam = new SteamColumn(height, radius);
