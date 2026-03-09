@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CameraRig } from './CameraRig.js';
+import { NavigationControls } from './NavigationControls.js';
 import { GeyserBasin } from '../realms/GeyserBasin.js';
 import { PrismaticSprings } from '../realms/PrismaticSprings.js';
 import { GrandCanyon } from '../realms/GrandCanyon.js';
@@ -49,8 +49,8 @@ export class Experience {
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1.2;
 
-        // Camera Rig
-        this.cameraRig = new CameraRig(this.camera);
+        // Navigation Controls
+        this.navigationControls = new NavigationControls(this.camera, this.canvas);
 
         // Realms
         this.geyserBasin = new GeyserBasin();
@@ -109,27 +109,14 @@ export class Experience {
     }
 
     tick() {
-        const elapsedTime = this.clock.getElapsedTime();
+        const delta = this.clock.getDelta(); // This will give us time since last frame for physics
+        const elapsedTime = this.clock.elapsedTime;
 
-        // Auto-transition logic sequentially through the 5 realms
-        // Dwell for 15s in each realm, transition takes 20s. Total = 35s per realm.
-        if (this.currentRealmIndex < 4) {
-            // Target Z for each realm: -45, -95, -145, -195
-            const nextTransitionTime = (this.currentRealmIndex * CYCLE_TIME) + DWELL_TIME;
+        // We use an internal delta for navigation to be independent of clock getElapsedTime calls
+        const currentDelta = delta > 0.1 ? 0.016 : delta;
 
-            if (elapsedTime > nextTransitionTime && !this.cameraRig.isTransitioning) {
-                this.currentRealmIndex++;
-                const targetZ = -(this.currentRealmIndex * 50) + 5;
+        this.navigationControls.update(currentDelta || 0.016);
 
-                this.cameraRig.transitionTo(
-                    new THREE.Vector3(0, 2, targetZ),
-                    TRANSITION_DURATION,
-                    elapsedTime
-                );
-            }
-        }
-
-        this.cameraRig.update(elapsedTime);
         if (this.geyserBasin) this.geyserBasin.update(elapsedTime);
         if (this.prismaticSprings) this.prismaticSprings.update(elapsedTime);
         if (this.grandCanyon) this.grandCanyon.update(elapsedTime);
