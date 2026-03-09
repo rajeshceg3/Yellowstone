@@ -5,12 +5,17 @@ import { PrismaticSprings } from '../realms/PrismaticSprings.js';
 import { GrandCanyon } from '../realms/GrandCanyon.js';
 import { LamarValley } from '../realms/LamarValley.js';
 import { CalderaDepth } from '../realms/CalderaDepth.js';
+import { AudioSystem } from './AudioSystem.js';
 
 const GEYSER_COLOR = new THREE.Color('#dcdcdc');
 const PRISMATIC_COLOR = new THREE.Color('#e0f0ff'); // Cool mist blue
 const CANYON_COLOR = new THREE.Color('#8ca6b5'); // Cool mist blues / golden ochres
 const VALLEY_COLOR = new THREE.Color('#c2d1c7'); // Muted sage / early morning haze
 const CALDERA_COLOR = new THREE.Color('#3d2817'); // Dim ambers / volcanic glow through fog
+
+const DWELL_TIME = 15;
+const TRANSITION_DURATION = 20;
+const CYCLE_TIME = DWELL_TIME + TRANSITION_DURATION;
 
 export class Experience {
     constructor(canvas) {
@@ -70,6 +75,20 @@ export class Experience {
         // Transition State
         this.currentRealmIndex = 0;
 
+        // Audio System
+        this.audioSystem = new AudioSystem();
+
+        // One-time click listener to initialize audio
+        const initAudio = () => {
+            if (this.audioSystem) {
+                this.audioSystem.init();
+            }
+            document.removeEventListener('click', initAudio);
+            document.removeEventListener('touchstart', initAudio);
+        };
+        document.addEventListener('click', initAudio);
+        document.addEventListener('touchstart', initAudio);
+
         // Resize handling
         this.boundResize = this.resize.bind(this);
         window.addEventListener('resize', this.boundResize);
@@ -94,10 +113,6 @@ export class Experience {
 
         // Auto-transition logic sequentially through the 5 realms
         // Dwell for 15s in each realm, transition takes 20s. Total = 35s per realm.
-        const DWELL_TIME = 15;
-        const TRANSITION_DURATION = 20;
-        const CYCLE_TIME = DWELL_TIME + TRANSITION_DURATION;
-
         if (this.currentRealmIndex < 4) {
             // Target Z for each realm: -45, -95, -145, -195
             const nextTransitionTime = (this.currentRealmIndex * CYCLE_TIME) + DWELL_TIME;
@@ -166,6 +181,11 @@ export class Experience {
         }
 
         this.scene.fog.density = targetDensity;
+
+        // Audio Volumes update
+        if (this.audioSystem) {
+            this.audioSystem.updateVolumes(intervalIndex, progress);
+        }
 
         // Update UI Text
         let activeNameIndex = intervalIndex;
