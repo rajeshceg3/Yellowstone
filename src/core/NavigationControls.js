@@ -51,7 +51,19 @@ export class NavigationControls {
             currentY: 0
         };
 
+        this.hintHidden = false;
+
         this.init();
+    }
+
+    hideHint() {
+        if (!this.hintHidden) {
+            this.hintHidden = true;
+            const hint = document.getElementById('instruction-hint');
+            if (hint) {
+                hint.style.opacity = '0';
+            }
+        }
     }
 
     init() {
@@ -76,11 +88,7 @@ export class NavigationControls {
             this.domElement.requestPointerLock();
         }
 
-        // Hide hint if it exists
-        const hint = document.getElementById('instruction-hint');
-        if (hint) {
-            hint.style.opacity = '0';
-        }
+        this.hideHint();
     }
 
     onPointerLockChange() {
@@ -103,6 +111,7 @@ export class NavigationControls {
     }
 
     onKeyDown(event) {
+        this.hideHint();
         switch (event.code) {
             case 'ArrowUp':
             case 'KeyW':
@@ -198,11 +207,7 @@ export class NavigationControls {
             }
         }
 
-        // Hide hint if it exists
-        const hint = document.getElementById('instruction-hint');
-        if (hint) {
-            hint.style.opacity = '0';
-        }
+        this.hideHint();
     }
 
     onTouchMove(event) {

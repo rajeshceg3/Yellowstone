@@ -17,6 +17,9 @@ const DWELL_TIME = 15;
 const TRANSITION_DURATION = 20;
 const CYCLE_TIME = DWELL_TIME + TRANSITION_DURATION;
 
+const REALM_NAMES = ["Geyser Basin", "Prismatic Spring", "Grand Canyon", "Lamar Valley", "Caldera Depth"];
+const REALM_COLORS = [GEYSER_COLOR, PRISMATIC_COLOR, CANYON_COLOR, VALLEY_COLOR, CALDERA_COLOR];
+
 export class Experience {
     constructor(canvas) {
         this.canvas = canvas;
@@ -78,16 +81,31 @@ export class Experience {
         // Audio System
         this.audioSystem = new AudioSystem();
 
-        // One-time click listener to initialize audio
-        const initAudio = () => {
-            if (this.audioSystem) {
-                this.audioSystem.init();
-            }
-            document.removeEventListener('click', initAudio);
-            document.removeEventListener('touchstart', initAudio);
-        };
-        document.addEventListener('click', initAudio);
-        document.addEventListener('touchstart', initAudio);
+        this.hasEntered = false;
+
+        // UI Initialization
+        const enterButton = document.getElementById('enter-button');
+        if (enterButton) {
+            enterButton.addEventListener('click', () => {
+                this.hasEntered = true;
+
+                // Init audio
+                if (this.audioSystem) {
+                    this.audioSystem.init();
+                }
+
+                // Hide intro screen
+                const introScreen = document.getElementById('intro-screen');
+                if (introScreen) {
+                    introScreen.style.opacity = '0';
+                    introScreen.style.pointerEvents = 'none';
+                    setTimeout(() => introScreen.remove(), 2000);
+                }
+
+                // Show initial cinematic title
+                this.showCinematicTitle(REALM_NAMES[0]);
+            });
+        }
 
         // Resize handling
         this.boundResize = this.resize.bind(this);
@@ -95,6 +113,25 @@ export class Experience {
 
         // Start loop
         this.tick();
+    }
+
+    showCinematicTitle(title) {
+        const titleEl = document.getElementById('cinematic-title');
+        const titleTextEl = document.getElementById('cinematic-title-text');
+
+        if (!titleEl || !titleTextEl) return;
+
+        titleTextEl.innerText = title;
+        titleEl.style.opacity = '1';
+
+        // Clear existing timeout if present to avoid overlap
+        if (this.titleTimeout) {
+            clearTimeout(this.titleTimeout);
+        }
+
+        this.titleTimeout = setTimeout(() => {
+            titleEl.style.opacity = '0';
+        }, 4000); // Wait 4 seconds then fade out
     }
 
     resize() {
@@ -128,8 +165,6 @@ export class Experience {
 
         // Determine which two realms we are between based on camZ
         // Each realm is 50 units apart: 0, -50, -100, -150, -200
-        const realmColors = [GEYSER_COLOR, PRISMATIC_COLOR, CANYON_COLOR, VALLEY_COLOR, CALDERA_COLOR];
-        const realmNames = ["Geyser Basin", "Prismatic Spring", "Grand Canyon", "Lamar Valley", "Caldera Depth"];
 
         // Find which interval we are in
         let intervalIndex = Math.max(0, Math.min(3, Math.floor(-camZ / 50)));
@@ -144,8 +179,8 @@ export class Experience {
         }
 
         // Color interpolation
-        const startColor = realmColors[intervalIndex];
-        const endColor = realmColors[intervalIndex + 1];
+        const startColor = REALM_COLORS[intervalIndex];
+        const endColor = REALM_COLORS[intervalIndex + 1];
 
         this.scene.background.lerpColors(startColor, endColor, progress);
         this.scene.fog.color.copy(this.scene.background);
@@ -179,15 +214,20 @@ export class Experience {
         if (progress > 0.5) activeNameIndex++;
 
         const regionNameEl = document.getElementById('region-name');
-        if (regionNameEl && regionNameEl.innerText.toUpperCase() !== realmNames[activeNameIndex].toUpperCase() && !this.isFadingText) {
-            // Simple fade out/in effect
+
+        // Initial setup for region name to avoid undefined logic check
+        if (this.hasEntered && regionNameEl && regionNameEl.innerText.toUpperCase() !== REALM_NAMES[activeNameIndex].toUpperCase() && !this.isFadingText) {
+            // Simple fade out/in effect for corner text
             this.isFadingText = true;
             regionNameEl.style.opacity = 0;
             setTimeout(() => {
-                regionNameEl.innerText = realmNames[activeNameIndex];
+                regionNameEl.innerText = REALM_NAMES[activeNameIndex];
                 regionNameEl.style.opacity = 1;
                 this.isFadingText = false;
             }, 1000);
+
+            // Also trigger the cinematic center text when entering a new realm
+            this.showCinematicTitle(REALM_NAMES[activeNameIndex]);
         }
 
         this.renderer.render(this.scene, this.camera);

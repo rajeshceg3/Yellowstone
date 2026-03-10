@@ -8,9 +8,33 @@
   <body>
     <div id="app" class="relative w-full h-full">
         <canvas class="webgl fixed top-0 left-0 w-full h-full outline-none"></canvas>
+        <!-- Overlay UI -->
         <div class="absolute top-0 left-0 w-full h-full pointer-events-none flex flex-col justify-between p-8 text-white/80 font-light z-10">
-            <div class="uppercase tracking-widest text-sm transition-opacity duration-1000" id="region-name">Geyser Basin</div>
-            <div id="instruction-hint" class="text-xs tracking-wider opacity-60 transition-opacity duration-1000">WASD to move | Mouse/Touch to look</div>
+            <!-- Top corner region name -->
+            <div class="uppercase tracking-[0.3em] text-[10px] text-white/50 transition-opacity duration-1000" id="region-name">Geyser Basin</div>
+            <!-- Bottom corner instructions -->
+            <div id="instruction-hint" class="text-[10px] tracking-widest opacity-40 transition-opacity duration-1000 uppercase">WASD to move | Mouse/Touch to look</div>
+        </div>
+
+        <!-- Cinematic Title for Realm Transitions -->
+        <div id="cinematic-title" class="absolute top-0 left-0 w-full h-full pointer-events-none flex items-center justify-center z-20 opacity-0 transition-opacity duration-[3000ms] ease-in-out">
+            <h2 class="text-white/90 text-2xl md:text-4xl font-light tracking-[0.5em] uppercase" id="cinematic-title-text"></h2>
+        </div>
+
+        <!-- Intro Screen -->
+        <div id="intro-screen" class="absolute top-0 left-0 w-full h-full bg-[#1a1a1a] flex flex-col items-center justify-center z-50 transition-opacity duration-[2000ms] ease-in-out">
+            <div class="text-center space-y-8">
+                <h1 class="text-white/90 text-3xl md:text-5xl font-light tracking-[0.4em] uppercase animate-fade-in-up" style="opacity: 0; animation: fadeInUp 2s ease-out forwards;">Threshold of Earth</h1>
+                <p class="text-white/50 text-xs md:text-sm tracking-[0.2em] max-w-md mx-auto leading-relaxed animate-fade-in-up animation-delay-500" style="opacity: 0; animation: fadeInUp 2s ease-out forwards; animation-delay: 500ms;">
+                    A contemplative drift through geothermal mist, mineral light, and ancient silence.
+                </p>
+                <div class="pt-12 animate-fade-in-up animation-delay-1000" style="opacity: 0; animation: fadeInUp 2s ease-out forwards; animation-delay: 1000ms;">
+                    <button id="enter-button" class="text-white/70 hover:text-white border border-white/20 hover:border-white/60 px-8 py-3 text-xs tracking-[0.3em] uppercase transition-all duration-500 ease-out bg-transparent cursor-pointer relative overflow-hidden group">
+                        <span class="relative z-10 pointer-events-none">Enter Sanctuary</span>
+                        <div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     <script type="module" src="/src/main.js"></script>
