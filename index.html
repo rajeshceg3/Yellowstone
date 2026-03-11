@@ -8,9 +8,30 @@
   <body>
     <div id="app" class="relative w-full h-full">
         <canvas class="webgl fixed top-0 left-0 w-full h-full outline-none"></canvas>
-        <div class="absolute top-0 left-0 w-full h-full pointer-events-none flex flex-col justify-between p-8 text-white/80 font-light z-10">
-            <div class="uppercase tracking-widest text-sm transition-opacity duration-1000" id="region-name">Geyser Basin</div>
-            <div id="instruction-hint" class="text-xs tracking-wider opacity-60 transition-opacity duration-1000">WASD to move | Mouse/Touch to look</div>
+
+        <!-- Intro Screen -->
+        <div id="intro-screen" class="absolute top-0 left-0 w-full h-full bg-black flex flex-col items-center justify-center text-white/90 z-50 transition-opacity duration-2000 pointer-events-auto">
+            <h1 class="text-3xl md:text-5xl tracking-[0.3em] font-light mb-8 text-center px-4 uppercase opacity-0 fade-in-up" style="animation-delay: 0.5s;">Yellowstone Sanctuary</h1>
+            <p class="text-sm md:text-base tracking-widest font-light text-white/50 mb-16 text-center max-w-lg px-6 opacity-0 fade-in-up" style="animation-delay: 1.5s;">A living, breathing geothermal wilderness rendered in Three.js. Drift slowly. Observe quietly.</p>
+            <button id="enter-button" class="group relative px-8 py-3 uppercase tracking-[0.2em] text-sm font-light border border-white/20 hover:border-white/60 transition-colors duration-500 opacity-0 fade-in-up cursor-pointer overflow-hidden" style="animation-delay: 2.5s;">
+                <span class="relative z-10">Enter Sanctuary</span>
+                <div class="absolute inset-0 bg-white/5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-700 ease-out"></div>
+            </button>
+        </div>
+
+        <!-- UI Overlay -->
+        <div id="ui-overlay" class="absolute top-0 left-0 w-full h-full pointer-events-none flex flex-col justify-between p-8 text-white/80 font-light z-10 transition-opacity duration-1000 opacity-0">
+            <div class="flex justify-between items-start w-full">
+                <div class="uppercase tracking-[0.2em] text-sm transition-opacity duration-1000 drop-shadow-md" id="region-name">Geyser Basin</div>
+
+                <!-- Compass Glyph -->
+                <div class="w-10 h-10 border rounded-full border-white/30 flex items-center justify-center opacity-60 relative transition-transform duration-300" id="compass-glyph">
+                    <div class="w-0.5 h-3 bg-white/80 absolute top-1 rounded-full"></div>
+                    <div class="w-1 h-1 bg-red-400/80 absolute top-1.5 rounded-full z-10"></div>
+                </div>
+            </div>
+
+            <div id="instruction-hint" class="text-xs tracking-wider opacity-50 transition-opacity duration-1000 drop-shadow-md">WASD / SPACE / C to drift | MOUSE / TOUCH to observe</div>
         </div>
     </div>
     <script type="module" src="/src/main.js"></script>

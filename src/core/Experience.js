@@ -78,20 +78,56 @@ export class Experience {
         // Audio System
         this.audioSystem = new AudioSystem();
 
-        // One-time click listener to initialize audio
-        const initAudio = () => {
-            if (this.audioSystem) {
-                this.audioSystem.init();
-            }
-            document.removeEventListener('click', initAudio);
-            document.removeEventListener('touchstart', initAudio);
-        };
-        document.addEventListener('click', initAudio);
-        document.addEventListener('touchstart', initAudio);
+        // UI State
+        this.isActive = false; // Only true once user clicks "Enter"
+
+        // Handle Intro Screen
+        const enterButton = document.getElementById('enter-button');
+        const introScreen = document.getElementById('intro-screen');
+        const uiOverlay = document.getElementById('ui-overlay');
+
+        if (enterButton) {
+            enterButton.addEventListener('click', () => {
+                if (this.audioSystem) {
+                    this.audioSystem.init();
+                }
+
+                this.isActive = true;
+
+                if (introScreen) {
+                    introScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        introScreen.style.display = 'none';
+                        if (uiOverlay) {
+                            uiOverlay.style.opacity = '1';
+                        }
+                    }, 2000);
+                }
+            }, { once: true });
+        }
 
         // Resize handling
         this.boundResize = this.resize.bind(this);
         window.addEventListener('resize', this.boundResize);
+
+        // Inactivity tracking
+        this.lastInteractionTime = Date.now();
+        this.uiVisible = true;
+        this.uiOverlayElement = document.getElementById('ui-overlay');
+
+        const resetInteractionTimer = () => {
+            if (!this.isActive) return;
+            this.lastInteractionTime = Date.now();
+            if (!this.uiVisible && this.uiOverlayElement) {
+                this.uiVisible = true;
+                this.uiOverlayElement.style.opacity = '1';
+            }
+        };
+
+        window.addEventListener('mousemove', resetInteractionTimer);
+        window.addEventListener('keydown', resetInteractionTimer);
+        window.addEventListener('touchstart', resetInteractionTimer);
+        window.addEventListener('touchmove', resetInteractionTimer);
 
         // Start loop
         this.tick();
@@ -188,6 +224,25 @@ export class Experience {
                 regionNameEl.style.opacity = 1;
                 this.isFadingText = false;
             }, 1000);
+        }
+
+        // Compass Rotation
+        const compassGlyph = document.getElementById('compass-glyph');
+        if (compassGlyph) {
+            // Convert camera Y rotation to degrees
+            const degrees = THREE.MathUtils.radToDeg(this.camera.rotation.y);
+            compassGlyph.style.transform = `rotate(${degrees}deg)`;
+        }
+
+        // Inactivity UI Fade
+        if (this.isActive && this.uiVisible) {
+            const idleTime = Date.now() - this.lastInteractionTime;
+            if (idleTime > 8000) { // 8 seconds of inactivity
+                this.uiVisible = false;
+                if (this.uiOverlayElement) {
+                    this.uiOverlayElement.style.opacity = '0';
+                }
+            }
         }
 
         this.renderer.render(this.scene, this.camera);
