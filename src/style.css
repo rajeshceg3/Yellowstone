@@ -47,3 +47,18 @@ body {
 #compass-glyph {
   transform-origin: center;
 }
+
+@keyframes cinematicReveal {
+  0% {
+    letter-spacing: 0.1em;
+    opacity: 0;
+  }
+  100% {
+    letter-spacing: 0.3em;
+    opacity: 1;
+  }
+}
+
+.cinematic-reveal {
+  animation: cinematicReveal 3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}

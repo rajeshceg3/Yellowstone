@@ -216,13 +216,23 @@ export class Experience {
 
         const regionNameEl = document.getElementById('region-name');
         if (regionNameEl && regionNameEl.innerText.toUpperCase() !== realmNames[activeNameIndex].toUpperCase() && !this.isFadingText) {
-            // Simple fade out/in effect
+            // Cinematic fade out/in effect with tracking
             this.isFadingText = true;
+
+            // Remove the reveal class if it exists and fade out
             regionNameEl.style.opacity = 0;
+
             setTimeout(() => {
-                regionNameEl.innerText = realmNames[activeNameIndex];
-                regionNameEl.style.opacity = 1;
-                this.isFadingText = false;
+                regionNameEl.classList.remove('cinematic-reveal');
+                regionNameEl.style.letterSpacing = '0.1em'; // Reset tracking after fade out
+
+                // Allow a tiny reflow before re-adding the class to ensure animation restarts
+                requestAnimationFrame(() => {
+                    regionNameEl.innerText = realmNames[activeNameIndex];
+                    // Trigger the cinematic reveal animation
+                    regionNameEl.classList.add('cinematic-reveal');
+                    this.isFadingText = false;
+                });
             }, 1000);
         }
 
