@@ -13,8 +13,15 @@ def verify_app():
         print("Waiting for canvas...")
         page.wait_for_selector("canvas.webgl")
 
+        print("Clicking enter button...")
+        page.wait_for_selector("#enter-button")
+        page.locator("#enter-button").click()
+
         print("Waiting for region name...")
         page.wait_for_selector("#region-name")
+
+        # Wait a bit for UI to transition
+        page.wait_for_timeout(2500)
 
         # Verify text content
         region_name = page.locator("#region-name").inner_text()
