@@ -166,6 +166,7 @@ export class Experience {
         // Each realm is 50 units apart: 0, -50, -100, -150, -200
         const realmColors = [GEYSER_COLOR, PRISMATIC_COLOR, CANYON_COLOR, VALLEY_COLOR, CALDERA_COLOR];
         const realmNames = ["Geyser Basin", "Prismatic Spring", "Grand Canyon", "Lamar Valley", "Caldera Depth"];
+        const realmSubtitles = ["Surface Heat", "Microbial Life", "Golden Echoes", "Open Plains", "Ancient Magma"];
 
         // Find which interval we are in
         let intervalIndex = Math.max(0, Math.min(3, Math.floor(-camZ / 50)));
@@ -215,12 +216,15 @@ export class Experience {
         if (progress > 0.5) activeNameIndex++;
 
         const regionNameEl = document.getElementById('region-name');
+        const regionSubtitleEl = document.getElementById('region-subtitle');
+
         if (regionNameEl && regionNameEl.innerText.toUpperCase() !== realmNames[activeNameIndex].toUpperCase() && !this.isFadingText) {
             // Cinematic fade out/in effect with tracking
             this.isFadingText = true;
 
             // Remove the reveal class if it exists and fade out
             regionNameEl.style.opacity = 0;
+            if (regionSubtitleEl) regionSubtitleEl.style.opacity = 0;
 
             setTimeout(() => {
                 regionNameEl.classList.remove('cinematic-reveal');
@@ -229,6 +233,10 @@ export class Experience {
                 // Allow a tiny reflow before re-adding the class to ensure animation restarts
                 requestAnimationFrame(() => {
                     regionNameEl.innerText = realmNames[activeNameIndex];
+                    if (regionSubtitleEl) {
+                        regionSubtitleEl.innerText = realmSubtitles[activeNameIndex];
+                        regionSubtitleEl.style.opacity = 0.6;
+                    }
                     // Trigger the cinematic reveal animation
                     regionNameEl.classList.add('cinematic-reveal');
                     this.isFadingText = false;
