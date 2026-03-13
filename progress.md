@@ -22,6 +22,9 @@
 - [x] Implemented subtle soundscapes and audio design.
 - [x] Final visual polish and performance optimization.
 - [x] Final verification of all requirements in PRD.md.
+- [x] UX Transformation: Replaced opaque intro with "The Veil" frosted glass effect.
+- [x] UX Transformation: Replaced simple text fade with cinematic tracking expansion for region reveals.
+- [x] UX Transformation: Enhanced spatial compass with subtle cardinal directions.
 
 ## Next Steps
 - Submit PR for final review.
