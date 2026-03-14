@@ -10,7 +10,7 @@
         <canvas class="webgl fixed top-0 left-0 w-full h-full outline-none"></canvas>
 
         <!-- Intro Screen -->
-        <div id="intro-screen" class="absolute top-0 left-0 w-full h-full bg-black/40 backdrop-blur-2xl flex flex-col items-center justify-center text-white z-50 transition-opacity duration-2000 pointer-events-auto">
+        <div id="intro-screen" class="absolute top-0 left-0 w-full h-full bg-black/30 backdrop-blur-xl flex flex-col items-center justify-center text-white z-50 transition-opacity duration-2000 pointer-events-auto">
             <h1 class="text-3xl md:text-5xl tracking-[0.3em] font-light mb-8 text-center px-4 uppercase opacity-0 fade-in-up drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" style="animation-delay: 0.5s;">Yellowstone Sanctuary</h1>
             <p class="text-sm md:text-base tracking-widest font-light text-white/90 mb-16 text-center max-w-lg px-6 opacity-0 fade-in-up drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" style="animation-delay: 1.5s;">A living, breathing geothermal wilderness rendered in Three.js. Drift slowly. Observe quietly.</p>
             <button id="enter-button" class="group relative px-8 py-3 uppercase tracking-[0.2em] text-sm font-light border border-white/50 hover:border-white transition-colors duration-500 opacity-0 fade-in-up cursor-pointer overflow-hidden bg-black/20 backdrop-blur-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" style="animation-delay: 2.5s;">
@@ -22,16 +22,22 @@
         <!-- UI Overlay -->
         <div id="ui-overlay" class="absolute top-0 left-0 w-full h-full pointer-events-none flex flex-col justify-between p-8 text-white/80 font-light z-10 transition-opacity duration-1000 opacity-0">
             <div class="flex justify-between items-start w-full">
-                <div class="uppercase tracking-[0.2em] text-sm transition-opacity duration-1000 drop-shadow-md" id="region-name">Geyser Basin</div>
+                <div class="flex flex-col">
+                    <div class="uppercase tracking-[0.2em] text-sm transition-opacity duration-1000 drop-shadow-md" id="region-name">Geyser Basin</div>
+                    <div id="region-subtitle" class="text-xs tracking-[0.3em] opacity-60 transition-opacity duration-1000 mt-2">Surface Heat</div>
+                </div>
 
                 <!-- Compass Glyph -->
-                <div class="w-12 h-12 border rounded-full border-white/30 flex items-center justify-center opacity-60 relative transition-transform duration-300" id="compass-glyph">
-                    <div class="absolute text-[8px] font-bold opacity-40 top-0.5">N</div>
-                    <div class="absolute text-[8px] font-bold opacity-40 bottom-0.5 rotate-180">S</div>
-                    <div class="absolute text-[8px] font-bold opacity-40 right-1 -rotate-90">E</div>
-                    <div class="absolute text-[8px] font-bold opacity-40 left-1 rotate-90">W</div>
-                    <div class="w-0.5 h-3 bg-white/80 absolute top-3 rounded-full"></div>
-                    <div class="w-1 h-1 bg-red-400/80 absolute top-3.5 rounded-full z-10"></div>
+                <div class="group relative pointer-events-auto">
+                    <div class="absolute right-full mr-4 top-1/2 -translate-y-1/2 text-[10px] tracking-widest opacity-0 group-hover:opacity-60 transition-opacity duration-500 whitespace-nowrap">ORIENTATION</div>
+                    <div class="w-12 h-12 border rounded-full border-white/30 flex items-center justify-center opacity-60 relative transition-transform duration-300" id="compass-glyph">
+                        <div class="absolute text-[8px] font-bold opacity-40 top-0.5">N</div>
+                        <div class="absolute text-[8px] font-bold opacity-40 bottom-0.5 rotate-180">S</div>
+                        <div class="absolute text-[8px] font-bold opacity-40 right-1 -rotate-90">E</div>
+                        <div class="absolute text-[8px] font-bold opacity-40 left-1 rotate-90">W</div>
+                        <div class="w-0.5 h-3 bg-white/80 absolute top-3 rounded-full"></div>
+                        <div class="w-1 h-1 bg-red-400/80 absolute top-3.5 rounded-full z-10"></div>
+                    </div>
                 </div>
             </div>
 

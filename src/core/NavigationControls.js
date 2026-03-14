@@ -14,6 +14,9 @@ export class NavigationControls {
 
         // State
         this.isLocked = false;
+        this.isZooming = false;
+        this.baseFov = 35;
+        this.zoomFov = 20;
 
         // Euler for camera rotation
         this.euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -64,11 +67,28 @@ export class NavigationControls {
         document.addEventListener('keydown', this.onKeyDown.bind(this));
         document.addEventListener('keyup', this.onKeyUp.bind(this));
 
+        // Mouse Zoom
+        document.addEventListener('mousedown', this.onMouseDown.bind(this));
+        document.addEventListener('mouseup', this.onMouseUp.bind(this));
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
         // Touch
         this.domElement.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
         this.domElement.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
         this.domElement.addEventListener('touchend', this.onTouchEnd.bind(this));
         this.domElement.addEventListener('touchcancel', this.onTouchEnd.bind(this));
+    }
+
+    onMouseDown(event) {
+        if (event.button === 2) {
+            this.isZooming = true;
+        }
+    }
+
+    onMouseUp(event) {
+        if (event.button === 2) {
+            this.isZooming = false;
+        }
     }
 
     onClick() {
@@ -299,6 +319,11 @@ export class NavigationControls {
         this.velocity.x += (targetVelocity.x - this.velocity.x) * accel * delta;
         this.velocity.y += (targetVelocity.y - this.velocity.y) * accel * delta;
         this.velocity.z += (targetVelocity.z - this.velocity.z) * accel * delta;
+
+        // Handle cinematic zoom
+        const targetFov = this.isZooming ? this.zoomFov : this.baseFov;
+        this.camera.fov = THREE.MathUtils.lerp(this.camera.fov, targetFov, delta * 5.0);
+        this.camera.updateProjectionMatrix();
 
         // Move camera
         // Right vector
