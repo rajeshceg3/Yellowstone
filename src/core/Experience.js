@@ -1,269 +1,229 @@
-import * as THREE from 'three';
-import { NavigationControls } from './NavigationControls.js';
-import { GeyserBasin } from '../realms/GeyserBasin.js';
-import { PrismaticSprings } from '../realms/PrismaticSprings.js';
-import { GrandCanyon } from '../realms/GrandCanyon.js';
-import { LamarValley } from '../realms/LamarValley.js';
-import { CalderaDepth } from '../realms/CalderaDepth.js';
-import { AudioSystem } from './AudioSystem.js';
-
-const GEYSER_COLOR = new THREE.Color('#dcdcdc');
-const PRISMATIC_COLOR = new THREE.Color('#e0f0ff'); // Cool mist blue
-const CANYON_COLOR = new THREE.Color('#8ca6b5'); // Cool mist blues / golden ochres
-const VALLEY_COLOR = new THREE.Color('#c2d1c7'); // Muted sage / early morning haze
-const CALDERA_COLOR = new THREE.Color('#3d2817'); // Dim ambers / volcanic glow through fog
-
-const DWELL_TIME = 15;
-const TRANSITION_DURATION = 20;
-const CYCLE_TIME = DWELL_TIME + TRANSITION_DURATION;
-
+import * as T from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { createLandscapes } from "./Landscapes.js";
+import { AudioSystem } from "./AudioSystem.js";
 export class Experience {
-    constructor(canvas) {
-        this.canvas = canvas;
-        this.sizes = {
-            width: window.innerWidth,
-            height: window.innerHeight
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.scene = new T.Scene();
+    this.camera = new T.PerspectiveCamera(
+      42,
+      innerWidth / innerHeight,
+      0.1,
+      250,
+    );
+    this.renderer = new T.WebGLRenderer({ canvas, antialias: true });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.8));
+    this.renderer.setSize(innerWidth, innerHeight);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.autoUpdate = false;
+    this.renderer.shadowMap.type = T.PCFSoftShadowMap;
+    this.renderer.toneMapping = T.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.1;
+    this.scene.add(new T.HemisphereLight("#d7ebe7", "#9a8050", 2.1));
+    const sun = new T.DirectionalLight("#fff0c9", 3.1);
+    sun.position.set(-12, 24, 16);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(1024, 1024);
+    Object.assign(sun.shadow.camera, {
+      left: -32,
+      right: 32,
+      top: 32,
+      bottom: -32,
+      near: 1,
+      far: 100,
+    });
+    sun.shadow.bias = -0.001;
+    sun.shadow.normalBias = 0.05;
+    this.scene.add(sun);
+    const { scenes, animated, descriptors } = createLandscapes();
+    Object.assign(this, { scenes, animated, descriptors });
+    scenes.forEach((g) => this.scene.add(g));
+    this.controls = new OrbitControls(this.camera, canvas);
+    this.controls.enablePan = false;
+    this.controls.enableDamping = false;
+    this.controls.minDistance = 12;
+    this.controls.maxDistance = 90;
+    this.controls.maxPolarAngle = Math.PI * 0.48;
+    this.controls.minPolarAngle = 0.18;
+    this.controls.addEventListener("change", () => this.render());
+    this.audio = new AudioSystem();
+    this.index = 0;
+    this.time = 0;
+    this.paused = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this.raf = 0;
+    this.last = 0;
+    const skyGeo = new T.SphereGeometry(110, 32, 20);
+    this.skyMat = new T.ShaderMaterial({
+      side: T.BackSide,
+      uniforms: {
+        top: { value: new T.Color() },
+        bottom: { value: new T.Color() },
+      },
+      vertexShader:
+        "varying float h;void main(){h=position.y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
+      fragmentShader:
+        "varying float h;uniform vec3 top;uniform vec3 bottom;void main(){gl_FragColor=vec4(mix(bottom,top,smoothstep(-3.,60.,h)),1.);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}",
+    });
+    this.scene.add(new T.Mesh(skyGeo, this.skyMat));
+    document.querySelector("#view").onchange = (e) =>
+      this.select(Number(e.target.value));
+    document.querySelector("#reset").onclick = () => {
+      this.controls.reset();
+      this.reset();
+      document.querySelector("#status").textContent = "View reset";
+    };
+    document.querySelector("#pause").onclick = () =>
+      this.setPaused(!this.paused);
+    document.querySelector("#sound").onclick = async () => {
+      try {
+        const on = await this.audio.toggle();
+        const b = document.querySelector("#sound");
+        b.textContent = on ? "Sound on" : "Sound off";
+        b.setAttribute("aria-pressed", String(on));
+        this.audio.updateVolumes(this.index);
+      } catch (e) {
+        document.querySelector("#status").textContent = e.message;
+      }
+    };
+    const dialog = document.querySelector("#info");
+    document.querySelector("#about").onclick = () => dialog.showModal();
+    document.querySelector("#close-info").onclick = () => dialog.close();
+    canvas.addEventListener("keydown", (e) => {
+      const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+      if (!keys.includes(e.key)) return;
+      e.preventDefault();
+      const o = this.camera.position.clone().sub(this.controls.target),
+        s = new T.Spherical().setFromVector3(o);
+      s.theta +=
+        e.key === "ArrowLeft" ? 0.09 : e.key === "ArrowRight" ? -0.09 : 0;
+      s.phi = T.MathUtils.clamp(
+        s.phi +
+          (e.key === "ArrowUp" ? -0.06 : e.key === "ArrowDown" ? 0.06 : 0),
+        0.18,
+        Math.PI * 0.48,
+      );
+      this.camera.position
+        .copy(this.controls.target)
+        .add(new T.Vector3().setFromSpherical(s));
+      this.controls.update();
+      this.render();
+    });
+    window.addEventListener("resize", () => {
+      this.camera.aspect = innerWidth / innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(innerWidth, innerHeight);
+      this.reset();
+    });
+    document.addEventListener("visibilitychange", () => {
+      this.audio.sync();
+      if (document.hidden) this.stop();
+      else if (!this.paused) this.start();
+    });
+    this.audio.paused = this.paused;
+    this.select(0);
+    this.setPaused(this.paused);
+    window.__world = {
+      select: (i) => {
+        document.querySelector("#view").value = i;
+        this.select(i);
+      },
+      get state() {
+        return {
+          index: this.owner.index,
+          paused: this.owner.paused,
+          time: this.owner.time,
+          camera: this.owner.camera.position.toArray(),
+          target: this.owner.controls.target.toArray(),
+          audio: this.owner.audio.context?.state || "not-created",
         };
-
-        this.clock = new THREE.Clock();
-
-        // Scene setup
-        this.scene = new THREE.Scene();
-        // Atmospheric background color (matches Geyser Basin vibe: warm white/grey)
-        this.scene.background = GEYSER_COLOR.clone();
-        this.scene.fog = new THREE.FogExp2(GEYSER_COLOR, 0.05);
-
-        // Camera setup
-        this.camera = new THREE.PerspectiveCamera(35, this.sizes.width / this.sizes.height, 0.1, 100);
-        this.camera.position.set(0, 2, 8);
-        this.scene.add(this.camera);
-
-        // Renderer setup
-        this.renderer = new THREE.WebGLRenderer({
-            canvas: this.canvas,
-            antialias: true,
-            alpha: true
-        });
-        this.renderer.setSize(this.sizes.width, this.sizes.height);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.2;
-
-        // Navigation Controls
-        this.navigationControls = new NavigationControls(this.camera, this.canvas);
-
-        // Realms
-        this.geyserBasin = new GeyserBasin();
-        this.scene.add(this.geyserBasin.group);
-
-        this.prismaticSprings = new PrismaticSprings();
-        this.prismaticSprings.group.position.z = -50;
-        this.scene.add(this.prismaticSprings.group);
-
-        this.grandCanyon = new GrandCanyon();
-        this.grandCanyon.group.position.z = -100;
-        this.scene.add(this.grandCanyon.group);
-
-        this.lamarValley = new LamarValley();
-        this.lamarValley.group.position.z = -150;
-        this.scene.add(this.lamarValley.group);
-
-        this.calderaDepth = new CalderaDepth();
-        this.calderaDepth.group.position.z = -200;
-        this.scene.add(this.calderaDepth.group);
-
-        // Transition State
-        this.currentRealmIndex = 0;
-
-        // Audio System
-        this.audioSystem = new AudioSystem();
-
-        // UI State
-        this.isActive = false; // Only true once user clicks "Enter"
-
-        // Handle Intro Screen
-        const enterButton = document.getElementById('enter-button');
-        const introScreen = document.getElementById('intro-screen');
-        const uiOverlay = document.getElementById('ui-overlay');
-
-        if (enterButton) {
-            enterButton.addEventListener('click', () => {
-                if (this.audioSystem) {
-                    this.audioSystem.init();
-                }
-
-                this.isActive = true;
-
-                if (introScreen) {
-                    introScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        introScreen.style.display = 'none';
-                        if (uiOverlay) {
-                            uiOverlay.style.opacity = '1';
-                        }
-                    }, 2000);
-                }
-            }, { once: true });
-        }
-
-        // Resize handling
-        this.boundResize = this.resize.bind(this);
-        window.addEventListener('resize', this.boundResize);
-
-        // Inactivity tracking
-        this.lastInteractionTime = Date.now();
-        this.uiVisible = true;
-        this.uiOverlayElement = document.getElementById('ui-overlay');
-
-        const resetInteractionTimer = () => {
-            if (!this.isActive) return;
-            this.lastInteractionTime = Date.now();
-            if (!this.uiVisible && this.uiOverlayElement) {
-                this.uiVisible = true;
-                this.uiOverlayElement.style.opacity = '1';
-            }
-        };
-
-        window.addEventListener('mousemove', resetInteractionTimer);
-        window.addEventListener('keydown', resetInteractionTimer);
-        window.addEventListener('touchstart', resetInteractionTimer);
-        window.addEventListener('touchmove', resetInteractionTimer);
-
-        // Start loop
-        this.tick();
+      },
+      owner: this,
+    };
+  }
+  select(i) {
+    this.renderer.shadowMap.needsUpdate = true;
+    this.index = i;
+    this.scenes.forEach((g, n) => (g.visible = n === i));
+    const d = this.descriptors[i];
+    document.querySelector("#scene-name").textContent = d[0];
+    document.querySelector("#scene-note").textContent = d[1];
+    this.skyMat.uniforms.top.value.set(d[2][0]);
+    this.skyMat.uniforms.bottom.value.set(d[2][1]);
+    this.scene.fog = new T.Fog(d[2][0], 55, 120);
+    this.audio.updateVolumes(i);
+    this.reset();
+  }
+  reset() {
+    const d = this.descriptors[this.index];
+    this.controls.target.fromArray(d[4]);
+    const p = new T.Vector3().fromArray(d[3]);
+    if (innerWidth < 600) {
+      p.sub(this.controls.target)
+        .multiplyScalar(
+          this.index === 1
+            ? innerWidth < 350
+              ? 2.1
+              : 1.75
+            : this.index === 4
+              ? innerWidth < 350
+                ? 1.8
+                : 1.55
+              : innerWidth < 350
+                ? 1.28
+                : 1.2,
+        )
+        .add(this.controls.target);
+      this.controls.target.y += this.index === 1 ? -0.8 : 1.5;
     }
-
-    resize() {
-        this.sizes.width = window.innerWidth;
-        this.sizes.height = window.innerHeight;
-
-        this.camera.aspect = this.sizes.width / this.sizes.height;
-        this.camera.updateProjectionMatrix();
-
-        this.renderer.setSize(this.sizes.width, this.sizes.height);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    }
-
-    tick() {
-        const delta = this.clock.getDelta(); // This will give us time since last frame for physics
-        const elapsedTime = this.clock.elapsedTime;
-
-        // We use an internal delta for navigation to be independent of clock getElapsedTime calls
-        const currentDelta = delta > 0.1 ? 0.016 : delta;
-
-        this.navigationControls.update(currentDelta || 0.016);
-
-        if (this.geyserBasin) this.geyserBasin.update(elapsedTime);
-        if (this.prismaticSprings) this.prismaticSprings.update(elapsedTime);
-        if (this.grandCanyon) this.grandCanyon.update(elapsedTime);
-        if (this.lamarValley) this.lamarValley.update(elapsedTime);
-        if (this.calderaDepth) this.calderaDepth.update(elapsedTime);
-
-        // Environmental Transition based on camera Z
-        const camZ = this.camera.position.z;
-
-        // Determine which two realms we are between based on camZ
-        // Each realm is 50 units apart: 0, -50, -100, -150, -200
-        const realmColors = [GEYSER_COLOR, PRISMATIC_COLOR, CANYON_COLOR, VALLEY_COLOR, CALDERA_COLOR];
-        const realmNames = ["Geyser Basin", "Prismatic Spring", "Grand Canyon", "Lamar Valley", "Caldera Depth"];
-        const realmSubtitles = ["Surface Heat", "Microbial Life", "Golden Echoes", "Open Plains", "Ancient Magma"];
-
-        // Find which interval we are in
-        let intervalIndex = Math.max(0, Math.min(3, Math.floor(-camZ / 50)));
-        let startZ = -(intervalIndex * 50) - 10; // Start transition a bit early
-        let endZ = -(intervalIndex * 50) - 40;   // End before reaching next realm center
-
-        let progress = 0;
-        if (camZ < startZ && camZ > endZ) {
-             progress = (camZ - startZ) / (endZ - startZ);
-        } else if (camZ <= endZ) {
-            progress = 1.0;
-        }
-
-        // Color interpolation
-        const startColor = realmColors[intervalIndex];
-        const endColor = realmColors[intervalIndex + 1];
-
-        this.scene.background.lerpColors(startColor, endColor, progress);
-        this.scene.fog.color.copy(this.scene.background);
-
-        // Fog Density: Thick steam wall in the middle of transition
-        let targetDensity = 0.05;
-        if (progress > 0 && progress < 1) {
-            if (progress < 0.5) {
-                targetDensity = THREE.MathUtils.lerp(0.05, 0.08, progress * 2);
-            } else {
-                targetDensity = THREE.MathUtils.lerp(0.08, 0.04, (progress - 0.5) * 2);
-            }
-        } else if (progress === 1) {
-            targetDensity = 0.04; // Baseline for next realm
-        }
-
-        // In deep caldera we want thicker baseline fog
-        if (camZ < -190) {
-            targetDensity = THREE.MathUtils.lerp(0.04, 0.06, (-camZ - 190) / 10);
-        }
-
-        this.scene.fog.density = targetDensity;
-
-        // Audio Volumes update
-        if (this.audioSystem) {
-            this.audioSystem.updateVolumes(intervalIndex, progress);
-        }
-
-        // Update UI Text
-        let activeNameIndex = intervalIndex;
-        if (progress > 0.5) activeNameIndex++;
-
-        const regionNameEl = document.getElementById('region-name');
-        const regionSubtitleEl = document.getElementById('region-subtitle');
-
-        if (regionNameEl && regionNameEl.innerText.toUpperCase() !== realmNames[activeNameIndex].toUpperCase() && !this.isFadingText) {
-            // Cinematic fade out/in effect with tracking
-            this.isFadingText = true;
-
-            // Remove the reveal class if it exists and fade out
-            regionNameEl.style.opacity = 0;
-            if (regionSubtitleEl) regionSubtitleEl.style.opacity = 0;
-
-            setTimeout(() => {
-                regionNameEl.classList.remove('cinematic-reveal');
-                regionNameEl.style.letterSpacing = '0.1em'; // Reset tracking after fade out
-
-                // Allow a tiny reflow before re-adding the class to ensure animation restarts
-                requestAnimationFrame(() => {
-                    regionNameEl.innerText = realmNames[activeNameIndex];
-                    if (regionSubtitleEl) {
-                        regionSubtitleEl.innerText = realmSubtitles[activeNameIndex];
-                        regionSubtitleEl.style.opacity = 0.6;
-                    }
-                    // Trigger the cinematic reveal animation
-                    regionNameEl.classList.add('cinematic-reveal');
-                    this.isFadingText = false;
-                });
-            }, 1000);
-        }
-
-        // Compass Rotation
-        const compassGlyph = document.getElementById('compass-glyph');
-        if (compassGlyph) {
-            // Convert camera Y rotation to degrees
-            const degrees = THREE.MathUtils.radToDeg(this.camera.rotation.y);
-            compassGlyph.style.transform = `rotate(${degrees}deg)`;
-        }
-
-        // Inactivity UI Fade
-        if (this.isActive && this.uiVisible) {
-            const idleTime = Date.now() - this.lastInteractionTime;
-            if (idleTime > 8000) { // 8 seconds of inactivity
-                this.uiVisible = false;
-                if (this.uiOverlayElement) {
-                    this.uiOverlayElement.style.opacity = '0';
-                }
-            }
-        }
-
-        this.renderer.render(this.scene, this.camera);
-        window.requestAnimationFrame(() => this.tick());
-    }
+    this.camera.position.copy(p);
+    this.camera.lookAt(this.controls.target);
+    this.controls.update();
+    this.controls.saveState();
+    this.render();
+  }
+  setPaused(p) {
+    this.paused = p;
+    this.audio.paused = p;
+    this.audio.sync();
+    const b = document.querySelector("#pause");
+    b.textContent = p ? "Play" : "Pause";
+    b.setAttribute("aria-pressed", String(p));
+    p ? this.stop() : this.start();
+    this.render();
+  }
+  stop() {
+    clearTimeout(this.timer);
+    cancelAnimationFrame(this.raf);
+    this.raf = 0;
+    this.last = 0;
+  }
+  start() {
+    if (this.raf) return;
+    const frame = (now) => {
+      this.raf = 0;
+      if (this.paused || document.hidden) return;
+      this.time += this.last ? Math.min((now - this.last) / 1000, 0.05) : 0;
+      this.last = now;
+      for (const a of this.animated) {
+        if (!a.o.parent.visible) continue;
+        if (a.type === "steam") {
+          a.o.position.x =
+            a.base.x + Math.sin(this.time * 0.45 + a.j) * (0.05 + a.j * 0.006);
+          a.o.position.y =
+            a.base.y + Math.sin(this.time * 0.9 + a.j * 0.3) * 0.11;
+          a.o.material.opacity = 0.24 + 0.06 * Math.sin(this.time + a.j);
+        } else
+          a.o.position.x = a.base.x + Math.sin(this.time * 0.2 + a.j) * 0.4;
+      }
+      if (this.index < 3) this.render();
+      this.timer = setTimeout(() => {
+        this.raf = requestAnimationFrame(frame);
+      }, 80);
+    };
+    this.raf = requestAnimationFrame(frame);
+  }
+  render() {
+    this.renderer.render(this.scene, this.camera);
+  }
 }
