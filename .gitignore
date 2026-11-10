@@ -2,3 +2,6 @@ node_modules/
 dist/
 .DS_Store
 dev_server.log
+
+test-results/
+verification/*.png

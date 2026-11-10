@@ -1,0 +1,248 @@
+[
+  {
+    "file": "browser-final-phone.json",
+    "stats": {
+      "startTime": "2026-11-10T21:43:40.462Z",
+      "duration": 86577.69399999999,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "suites": [
+      {
+        "title": "worlds.spec.cjs",
+        "file": "worlds.spec.cjs",
+        "column": 0,
+        "line": 0,
+        "specs": [
+          {
+            "title": "320px reduce five landscapes and controls",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 90000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 15965,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-11-10T21:43:41.138Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "472a29b9287ede556082-b39f88604ae133e9af9a",
+            "file": "worlds.spec.cjs",
+            "line": 4,
+            "column": 5
+          },
+          {
+            "title": "320px no-preference five landscapes and controls",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 90000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 25970,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-11-10T21:43:57.308Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "472a29b9287ede556082-0d9cf3f8509e8b39f7d0",
+            "file": "worlds.spec.cjs",
+            "line": 4,
+            "column": 5
+          },
+          {
+            "title": "390px reduce five landscapes and controls",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 90000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 17018,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-11-10T21:44:23.287Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "472a29b9287ede556082-74c1712a80bc0c5c84bd",
+            "file": "worlds.spec.cjs",
+            "line": 4,
+            "column": 5
+          },
+          {
+            "title": "390px no-preference five landscapes and controls",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 90000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 26628,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-11-10T21:44:40.325Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "472a29b9287ede556082-5c02173252a193f26586",
+            "file": "worlds.spec.cjs",
+            "line": 4,
+            "column": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "file": "browser-final-desktop.json",
+    "stats": {
+      "startTime": "2026-11-10T21:45:11.786Z",
+      "duration": 87617.72700000001,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "suites": [
+      {
+        "title": "worlds.spec.cjs",
+        "file": "worlds.spec.cjs",
+        "column": 0,
+        "line": 0,
+        "specs": [
+          {
+            "title": "1440px reduce five landscapes and controls",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 90000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 34126,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-11-10T21:45:12.448Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "472a29b9287ede556082-e0ff71ab29cc564d4bac",
+            "file": "worlds.spec.cjs",
+            "line": 4,
+            "column": 5
+          },
+          {
+            "title": "1440px no-preference five landscapes and controls",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 90000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 52546,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-11-10T21:45:46.785Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "472a29b9287ede556082-1c27ba732522dba3da66",
+            "file": "worlds.spec.cjs",
+            "line": 4,
+            "column": 5
+          }
+        ]
+      }
+    ]
+  }
+]
