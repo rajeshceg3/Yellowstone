@@ -66,8 +66,6 @@ export class Experience {
         "varying float h;uniform vec3 top;uniform vec3 bottom;void main(){gl_FragColor=vec4(mix(bottom,top,smoothstep(-3.,60.,h)),1.);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}",
     });
     this.scene.add(new T.Mesh(skyGeo, this.skyMat));
-    document.querySelector("#view").onchange = (e) =>
-      this.select(Number(e.target.value));
     document.querySelector("#reset").onclick = () => {
       this.controls.reset();
       this.reset();
@@ -124,10 +122,7 @@ export class Experience {
     this.select(0);
     this.setPaused(this.paused);
     window.__world = {
-      select: (i) => {
-        document.querySelector("#view").value = i;
-        this.select(i);
-      },
+      select: (i) => this.select(i),
       get state() {
         return {
           index: this.owner.index,
