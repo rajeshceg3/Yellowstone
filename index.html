@@ -21,20 +21,14 @@
       <h1 id="scene-name">Geyser basin</h1>
       <p id="scene-note"></p>
     </header>
-    <section class="toolbar" aria-label="Explore Yellowstone">
-      <label for="view">Choose a landscape</label
-      ><select id="view">
-        <option value="0">01 · Geyser basin</option>
-        <option value="1">02 · Grand Prismatic</option>
-        <option value="2">03 · Canyon & Lower Falls</option>
-        <option value="3">04 · Lamar Valley</option>
-        <option value="4">05 · Caldera country</option>
-      </select>
+    <section class="toolbar chrome chrome-on" aria-label="Explore Yellowstone">
+      <nav class="view-trail" role="radiogroup" aria-label="Choose a landscape"><button type="button" data-view="0" role="radio" aria-checked="true" aria-label="01 · Geyser basin" title="01 · Geyser basin" tabindex="0" class="trail-token"><svg class="ink-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 20 L 9.5 12 L 14.5 12 L 16 20 M5 20.2 L 19 20 M10 9 C 10.5 7.5, 11.5 7, 12 5.5 M13 9.2 C 13.8 7.8, 14.8 7.4, 15.6 6.2 M12 9.5 L 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" data-view="1" role="radio" aria-checked="false" aria-label="02 · Grand Prismatic" title="02 · Grand Prismatic" tabindex="-1" class="trail-token"><svg class="ink-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="6.2" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button><button type="button" data-view="2" role="radio" aria-checked="false" aria-label="03 · Canyon &amp; Lower Falls" title="03 · Canyon &amp; Lower Falls" tabindex="-1" class="trail-token"><svg class="ink-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 4.5 L 6.2 19.5 M18 4.5 L 17.8 19.5 M9.5 5 L 9.3 12 C 9.3 14.5, 10.6 15.5, 12 15.6 C 13.4 15.7, 14.7 14.6, 14.6 12.2 L 14.5 5 M11 19.5 L 11.2 17.5 M13.2 19.5 L 13.1 17.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><button type="button" data-view="3" role="radio" aria-checked="false" aria-label="04 · Lamar Valley" title="04 · Lamar Valley" tabindex="-1" class="trail-token"><svg class="ink-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 17 C 7 14.5, 9 14.8, 12 16 C 15 17.2, 17.5 16.5, 20 14.8 M7.5 14.2 C 7.2 12, 8.8 10.3, 11 10.4 C 12.2 10.4 13 11, 13.4 12 M9 10.6 L 8.4 8.8 M12.6 10.7 L 13.3 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><button type="button" data-view="4" role="radio" aria-checked="false" aria-label="05 · Caldera country" title="05 · Caldera country" tabindex="-1" class="trail-token"><svg class="ink-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 15.5 C 6 12.5, 9 11.3, 12 11.4 C 15 11.5, 18 12.7, 21 15.4 M6.5 15.6 C 8.5 14, 10.2 13.4, 12 13.5 C 13.8 13.6, 15.5 14.2, 17.5 15.5 M10 18.5 L 14 18.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></nav>
       <div class="buttons">
         <button id="reset">Reset view</button
         ><button id="pause" aria-pressed="false">Pause</button
         ><button id="sound" aria-pressed="false">Sound off</button
-        ><button id="about">About</button>
+        ><button id="about">About</button
+        ><button id="pin-controls" aria-pressed="false" title="Keep controls visible">Pin</button>
       </div>
       <p class="hint">Drag / arrows to orbit · Scroll / pinch to zoom</p>
     </section>
@@ -84,6 +78,7 @@
       <button id="close-info">Back to the landscape</button>
     </dialog>
     <div id="status" role="status" class="sr-only"></div>
+    <button class="chrome-hint" aria-label="Show controls" hidden><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 20 L 9.5 12 L 14.5 12 L 16 20 M5 20.2 L 19 20 M10 9 C 10.5 7.5, 11.5 7, 12 5.5 M13 9.2 C 13.8 7.8, 14.8 7.4, 15.6 6.2 M12 9.5 L 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
